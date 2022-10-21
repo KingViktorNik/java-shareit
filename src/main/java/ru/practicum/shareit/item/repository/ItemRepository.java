@@ -13,7 +13,7 @@ public interface ItemRepository {
 
     Item getByName(String name);
 
-    List<Item> getByUserIdItemAll(Long UserId);
+    List<Item> getByUserIdItemAll(Long userId);
 
     List<Item> getItemSearch(String search);
 }
