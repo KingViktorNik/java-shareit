@@ -28,13 +28,15 @@ public class ItemController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ItemDto> addItem(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<ItemDto> addItem(@Valid @RequestHeader(required = false,
+            value = "X-Sharer-User-Id") Long userId,
                                            @Valid @RequestBody ItemDto itemDto) {
         return ResponseEntity.ok(itemService.addItem(userId, itemDto));
     }
 
     @PatchMapping(path = "/{itemId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ItemDto> updateItem(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<ItemDto> updateItem(@Valid @RequestHeader(required = false,
+            value = "X-Sharer-User-Id") Long userId,
                                               @PathVariable Long itemId,
                                               @RequestBody ItemDto itemDto) {
         itemDto.setId(itemId);
@@ -47,7 +49,8 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getUserItemAll(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getUserItemAll(@Valid @RequestHeader(required = false,
+            value = "X-Sharer-User-Id") Long userId) {
         return itemService.getByUserIdItemAll(userId);
     }
 
