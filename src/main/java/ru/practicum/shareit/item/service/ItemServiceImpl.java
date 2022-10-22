@@ -1,31 +1,37 @@
 package ru.practicum.shareit.item.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NullObjectException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class ItemServiceImpl implements ItemService {
-    private final Logger log = LoggerFactory.getLogger(getClass());
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final ItemMapper itemMapper;
 
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, ItemMapper itemMapper, UserRepository userRepository) {
         this.itemRepository = itemRepository;
+        this.itemMapper = itemMapper;
         this.userRepository = userRepository;
     }
 
     @Override
-    public Item addItem(Long userId, Item item) {
+    public ItemDto addItem(Long userId, ItemDto itemDto) {
+        Item item = itemMapper.toEntity(itemDto);
+
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
@@ -43,11 +49,13 @@ public class ItemServiceImpl implements ItemService {
         item.setOwner(userId);
         item.setId(itemRepository.create(item));
         log.info("new item - id:'{}' name:'{}'", item.getId(), item.getName());
-        return item;
+        return itemMapper.toDto(item);
     }
 
     @Override
-    public Item updateItem(Long userId, Item newItem) {
+    public ItemDto updateItem(Long userId, ItemDto itemDto) {
+        Item newItem = itemMapper.toEntity(itemDto);
+
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
@@ -72,28 +80,33 @@ public class ItemServiceImpl implements ItemService {
 
         newItem = itemRepository.update(updateNullData(item, newItem));
         log.info("update item - id:'{}' name:'{}'", newItem.getId(), newItem.getName());
-        return newItem;
+        return itemMapper.toDto(newItem);
     }
 
     @Override
-    public Item getByItemId(Long itemId) {
-        return itemRepository.getById(itemId);
+    public ItemDto getByItemId(Long itemId) {
+        return itemMapper.toDto(itemRepository.getById(itemId));
     }
 
     @Override
-    public List<Item> getByUserIdItemAll(Long userId) {
+    public List<ItemDto> getByUserIdItemAll(Long userId) {
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
-        return itemRepository.getByUserIdItemAll(userId);
+        return itemRepository.getByUserIdItemAll(userId).stream()
+                .map(itemMapper::toDto)
+                .collect(Collectors.toList());
+
     }
 
     @Override
-    public List<Item> getItemSearch(String search) {
+    public List<ItemDto> getItemSearch(String search) {
         if (search.isEmpty() || search.isBlank()) {
             return List.of();
         }
-        return itemRepository.getItemSearch(search.toLowerCase());
+        return itemRepository.getItemSearch(search.toLowerCase()).stream()
+                .map(itemMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     // Поверка полей на null

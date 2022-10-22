@@ -22,19 +22,15 @@ import java.util.stream.Collectors;
 
 public class ItemController {
     private final ItemService itemService;
-    private final ItemMapper itemMapper;
 
-    public ItemController(ItemService itemService, ItemMapper itemMapper) {
+    public ItemController(ItemService itemService) {
         this.itemService = itemService;
-        this.itemMapper = itemMapper;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ItemDto> addItem(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
                                            @Valid @RequestBody ItemDto itemDto) {
-        Item item = itemMapper.toEntity(itemDto);
-        item = itemService.addItem(userId, item);
-        return ResponseEntity.ok(itemMapper.toDto(item));
+        return ResponseEntity.ok(itemService.addItem(userId, itemDto));
     }
 
     @PatchMapping(path = "/{itemId}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -42,30 +38,21 @@ public class ItemController {
                                               @PathVariable Long itemId,
                                               @RequestBody ItemDto itemDto) {
         itemDto.setId(itemId);
-        Item item = itemMapper.toEntity(itemDto);
-        item = itemService.updateItem(userId, item);
-        return ResponseEntity.ok(itemMapper.toDto(item));
+        return ResponseEntity.ok(itemService.updateItem(userId, itemDto));
     }
 
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemDto> getByItemId(@Valid @PathVariable Long itemId) {
-        Item item = itemService.getByItemId(itemId);
-        return ResponseEntity.ok(itemMapper.toDto(item));
+        return ResponseEntity.ok(itemService.getByItemId(itemId));
     }
 
     @GetMapping
     public List<ItemDto> getUserItemAll(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId) {
-        List<Item> items = itemService.getByUserIdItemAll(userId);
-        return items.stream()
-                .map(itemMapper::toDto)
-                .collect(Collectors.toList());
+        return itemService.getByUserIdItemAll(userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> getItemSearch(@RequestParam("text") String search) {
-        List<Item> items = itemService.getItemSearch(search);
-        return items.stream()
-                .map(itemMapper::toDto)
-                .collect(Collectors.toList());
+        return itemService.getItemSearch(search);
     }
 }

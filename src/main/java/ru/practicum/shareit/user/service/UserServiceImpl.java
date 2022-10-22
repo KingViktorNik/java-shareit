@@ -1,37 +1,44 @@
 package ru.practicum.shareit.user.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.*;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
-    private final Logger log = LoggerFactory.getLogger(getClass());
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
-    public User newUser(User user) {
-        user.setId(userRepository.create(user));
+    @Override
+    public UserDto newUser(UserDto userDto) {
+        userDto.setId(userRepository.create(userMapper.toEntity(userDto)));
 
-        if (user.getId() == null) {
-            throw new ConflictException("User with mail " + user.getEmail() + " already registered");
+        if (userDto.getId() == null) {
+            throw new ConflictException("User with mail " + userDto.getEmail() + " already registered");
         }
 
-        log.info("new user - id:'{}' email:'{}'", user.getId(), user.getEmail());
-        return user;
+        log.info("new user - id:'{}' email:'{}'", userDto.getId(), userDto.getEmail());
+        return userDto;
     }
 
-    public User updateUser(User updateUser) {
+    @Override
+    public UserDto updateUser(UserDto userDto) {
+        User updateUser = userMapper.toEntity(userDto);
         User user = userRepository.getById(updateUser.getId());
 
         if (user == null) {
@@ -55,23 +62,29 @@ public class UserServiceImpl implements UserService {
             user.setName(updateUser.getName().trim());
         }
 
-        user = userRepository.update(user);
-        log.info("update user - id:'{}' email:'{}'", user.getId(), user.getEmail());
-        return user;
+        userDto = userMapper.toDto(userRepository.update(user));
+        log.info("update user - id:'{}' email:'{}'", userDto.getId(), userDto.getEmail());
+        return userDto;
     }
 
-    public User getByUserId(Long userId) {
+    @Override
+    public UserDto getByUserId(Long userId) {
         User user = userRepository.getById(userId);
         if (user == null) {
             throw new NullObjectException("User with id: " + userId + " not found");
         }
-        return user;
+        return userMapper.toDto(user);
     }
 
-    public List<User> getUserAll() {
-        return userRepository.getAll();
+    @Override
+    public List<UserDto> getUserAll() {
+        return userRepository.getAll().stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+
     }
 
+    @Override
     public void deleteUser(Long userId) {
         if (userRepository.getById(userId) != null) {
             userRepository.delete(userId);
