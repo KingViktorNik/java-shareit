@@ -5,13 +5,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.mapper.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Validated
 @RestController
@@ -28,15 +25,13 @@ public class ItemController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ItemDto> addItem(@Valid @RequestHeader(required = false,
-            value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<ItemDto> addItem(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
                                            @Valid @RequestBody ItemDto itemDto) {
         return ResponseEntity.ok(itemService.addItem(userId, itemDto));
     }
 
     @PatchMapping(path = "/{itemId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ItemDto> updateItem(@Valid @RequestHeader(required = false,
-            value = "X-Sharer-User-Id") Long userId,
+    public ResponseEntity<ItemDto> updateItem(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
                                               @PathVariable Long itemId,
                                               @RequestBody ItemDto itemDto) {
         itemDto.setId(itemId);
@@ -49,8 +44,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getUserItemAll(@Valid @RequestHeader(required = false,
-            value = "X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getUserItemAll(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId) {
         return itemService.getByUserIdItemAll(userId);
     }
 
