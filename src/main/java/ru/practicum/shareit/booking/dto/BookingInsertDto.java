@@ -1,8 +1,6 @@
 package ru.practicum.shareit.booking.dto;
 
 import lombok.*;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
@@ -11,19 +9,16 @@ import java.time.LocalDateTime;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookingDto {
-    private Long id;
+public class BookingInsertDto {
+    private Long itemId;
     private LocalDateTime start;
     private LocalDateTime end;
-    private String status;
-    private User booker;
-    private Item item;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BookingDto)) return false;
-        return id != null && id.equals(((BookingDto) o).getId());
+        if (!(o instanceof BookingInsertDto)) return false;
+        return itemId != null && itemId.equals(((BookingInsertDto) o).getItemId());
     }
 
     @Override
@@ -31,5 +26,3 @@ public class BookingDto {
         return getClass().hashCode();
     }
 }
-
-

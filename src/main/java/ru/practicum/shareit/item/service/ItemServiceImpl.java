@@ -1,91 +1,112 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.ConflictException;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NullObjectException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.validation.constraints.NotBlank;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-    private final ItemMapper itemMapper;
-
-    public ItemServiceImpl(ItemRepository itemRepository, ItemMapper itemMapper, UserRepository userRepository) {
-        this.itemRepository = itemRepository;
-        this.itemMapper = itemMapper;
-        this.userRepository = userRepository;
-    }
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
-    public ItemDto addItem(Long userId, ItemDto itemDto) {
-        Item item = itemMapper.toEntity(itemDto);
-
+    public ItemDto addItem(@NotBlank(message = "missing header data 'X-Sharer-User-Id'") Long userId, ItemDto itemDto) {
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
 
-        // Проверка существует ли такой пользователь
-        if (userRepository.getById(userId) == null) {
-            throw new NullObjectException("User with id: " + userId + " not found");
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NullObjectException("User with id: " + userId + " not found"));
 
-        // Проверка, есть ли такая вещь в списке
-        if (itemRepository.getByName(item.getName()) != null) {
-            throw new ConflictException("The '" + item.getName() + "' item is already on the list");
-        }
+        Item item = ItemMapper.toEntity(itemDto);
+        item.setOwner(user);
+        itemDto = ItemMapper.toItemDto(itemRepository.save(item));
 
-        item.setOwner(userId);
-        item.setId(itemRepository.create(item));
-        log.info("new item - id:'{}' name:'{}'", item.getId(), item.getName());
-        return itemMapper.toDto(item);
+        log.info("new item - id:'{}' name:'{}'", itemDto.getId(), itemDto.getName());
+
+        return itemDto;
     }
 
     @Override
     public ItemDto updateItem(Long userId, ItemDto itemDto) {
-        Item newItem = itemMapper.toEntity(itemDto);
-
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
 
-        User user = userRepository.getById(userId);
+        Long itemId = itemDto.getId();
 
-        // Проверка существует ли такой пользователь
-        if (user == null) {
-            throw new NullObjectException("User with id: " + userId + " not found");
+        Item item = itemRepository.findById(itemDto.getId())
+                .orElseThrow(() -> new NullObjectException("Item with id:" + itemId + " not found"));
+
+        if (!item.getOwner().getId().equals(userId)) {
+            throw new NullObjectException("The user with id:" + userId + " does not have such an item");
         }
 
-        // Список вещей пользователя
-        List<Item> items = itemRepository.getByUserIdItemAll(userId);
+        Item updateItem = ItemMapper.toEntity(itemDto);
+        updateItem.setOwner(item.getOwner());
 
-        // Проверка, есть ли такая вещь в списке
-        Item item = items.stream().filter(itemId -> itemId.getOwner().equals(userId)).findFirst().orElse(null);
-
-        if (item == null) {
-            throw new NullObjectException(String.format("User (id:%d name:%s) doesn't have a item(id:%d name:%s) thing",
-                    user.getId(), user.getName(), newItem.getId(), newItem.getName()));
+        if (updateItem.getAvailable() == null) {
+            updateItem.setAvailable(item.getAvailable());
         }
 
-        newItem = itemRepository.update(updateNullData(item, newItem));
-        log.info("update item - id:'{}' name:'{}'", newItem.getId(), newItem.getName());
-        return itemMapper.toDto(newItem);
+        if (updateItem.getName() == null) {
+            updateItem.setName(item.getName());
+        }
+
+        if (updateItem.getDescription() == null) {
+            updateItem.setDescription(item.getDescription());
+        }
+
+        itemDto = ItemMapper.toItemDto(itemRepository.save(updateItem));
+
+        log.info("update item - id:'{}' name:'{}'", updateItem.getId(), updateItem.getName());
+
+        return itemDto;
     }
 
     @Override
-    public ItemDto getByItemId(Long itemId) {
-        return itemMapper.toDto(itemRepository.getById(itemId));
+    public ItemDto getByItemId(Long userId, Long itemId) {
+        Item item = itemRepository.findById(itemId).
+                orElseThrow(() -> new NullObjectException("Thing with id:" + itemId + " does not exist"));
+
+        List<Comment> comment = commentRepository.findAllByItem_Id(itemId);
+
+        if (item.getOwner().getId().equals(userId)) {
+            Booking last = bookingRepository.getLastBooking(itemId, LocalDateTime.now()).stream()
+                    .findFirst()
+                    .orElse(null);
+
+            Booking next = bookingRepository.getNextBooking(itemId)
+                    .orElse(null);
+
+            return ItemMapper.toItemDto(item, last, next, comment);
+        }
+
+        return ItemMapper.toItemDto(item, comment);
     }
 
     @Override
@@ -93,10 +114,38 @@ public class ItemServiceImpl implements ItemService {
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
-        return itemRepository.getByUserIdItemAll(userId).stream()
-                .map(itemMapper::toDto)
-                .collect(Collectors.toList());
 
+        List<Item> items = itemRepository.findAllByOwner_Id(userId);
+
+        return items.stream()
+                .map(item -> {
+                    if (item.getOwner().getId().equals(userId)) {
+                        Booking last = bookingRepository.getLastBooking(item.getId(), LocalDateTime.now())
+                                .stream()
+                                .findFirst()
+                                .orElse(null);
+
+                        Booking next = bookingRepository.getNextBooking(item.getId())
+                                .orElse(null);
+
+                        List<Comment> comment = commentRepository.findAllByItem_Id(item.getId());
+
+                        return ItemMapper.toItemDto(item, last, next, comment);
+                    }
+
+                    return ItemMapper.toItemDto(item);
+                })
+                .sorted((o1, o2) -> {
+                    if (o1.getNextBooking() == null) {
+                        return +1;
+                    }
+                    if (o2.getNextBooking() == null) {
+                        return -1;
+                    } else {
+                        return o1.getNextBooking().getStartDate().compareTo(o2.getNextBooking().getStartDate());
+                    }
+                })
+                .collect(toList());
     }
 
     @Override
@@ -104,29 +153,38 @@ public class ItemServiceImpl implements ItemService {
         if (search.isEmpty() || search.isBlank()) {
             return List.of();
         }
-        return itemRepository.getItemSearch(search.toLowerCase()).stream()
-                .map(itemMapper::toDto)
-                .collect(Collectors.toList());
+        List<Item> items = itemRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(search, search);
+        return items.stream()
+                .filter(Item::getAvailable)
+                .map(ItemMapper::toItemDto)
+                .collect(toList());
     }
 
-    // Поверка полей на null
-    private Item updateNullData(Item item, Item newItem) {
-
-        if (newItem.getOwner() == null) {
-            newItem.setOwner(item.getOwner());
+    @Override
+    public CommentDto addComment(Long userId, Long itemId, String text) {
+        if (userId == null) {
+            throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
 
-        if (newItem.getName() == null) {
-            newItem.setName(item.getName());
+        Booking booking = bookingRepository.commentByBookerId(userId, itemId, LocalDateTime.now()).stream()
+                .findFirst()
+                .orElse(null);
+
+        if (booking == null) {
+            throw new ValidationException("User with id:'" + userId + "' did not rent a thing with id:'" + itemId + "'");
         }
 
-        if (newItem.getDescription() == null) {
-            newItem.setDescription(item.getDescription());
-        }
+        Comment comment = new Comment();
+        comment.setText(text);
+        comment.setItem(booking.getItem());
+        comment.setUser(booking.getBooker());
+        comment.setCreated(Instant.now());
 
-        if (newItem.getAvailable() == null) {
-            newItem.setAvailable(item.getAvailable());
-        }
-        return newItem;
+        commentRepository.save(comment);
+
+        log.info("add comment itemId:'" + itemId + "' bookerId:'" + "' ");
+
+        return ItemMapper.toCommentDto(comment);
     }
 }
+
