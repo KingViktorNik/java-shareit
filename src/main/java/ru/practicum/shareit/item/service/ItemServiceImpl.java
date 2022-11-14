@@ -34,7 +34,7 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
-    public ItemDto addItem(@NotBlank(message = "missing header data 'X-Sharer-User-Id'") Long userId, ItemDto itemDto) {
+    public ItemDto addItem(@NotBlank (message = "missing header data 'X-Sharer-User-Id'") Long userId, ItemDto itemDto) {
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
@@ -90,8 +90,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getByItemId(Long userId, Long itemId) {
-        Item item = itemRepository.findById(itemId).
-                orElseThrow(() -> new NullObjectException("Thing with id:" + itemId + " does not exist"));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NullObjectException("Thing with id:" + itemId + " does not exist"));
 
         List<Comment> comment = commentRepository.findAllByItem_Id(itemId);
 
