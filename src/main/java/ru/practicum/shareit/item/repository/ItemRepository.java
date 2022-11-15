@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -11,5 +13,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findAllByOwner_Id(Long userId);
 
     /** поиск вещи по названию **/
-    List<Item> findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
+    @Query("from Item i " +
+            "where upper(i.name) like upper(:text) " +
+            "or upper(i.description) like upper(:text)")
+    List<Item> getItemByName(@Param("text") String text);
 }

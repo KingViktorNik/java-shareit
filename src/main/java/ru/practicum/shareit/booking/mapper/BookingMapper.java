@@ -18,12 +18,14 @@ public class BookingMapper {
     }
 
     public BookingDto toDto(Booking booking) {
-        return new BookingDto(booking.getId(),
-                booking.getStartDate(),
-                booking.getEndDate(),
-                booking.getStatus().toString(),
-                booking.getBooker(),
-                booking.getItem()
-        );
+        BookingDto bookingDto = new BookingDto();
+        bookingDto.setId(booking.getId());
+        bookingDto.setStart(booking.getStartDate());
+        bookingDto.setEnd(booking.getEndDate());
+        bookingDto.setStatus(booking.getStatus().toString());
+        bookingDto.setBooker(booking.getBooker().getId());
+        bookingDto.setItem(booking.getItem().getId(), booking.getItem().getName());
+
+        return bookingDto;
     }
 }

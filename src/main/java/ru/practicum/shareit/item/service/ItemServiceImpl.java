@@ -142,7 +142,7 @@ public class ItemServiceImpl implements ItemService {
                     if (o2.getNextBooking() == null) {
                         return -1;
                     } else {
-                        return o1.getNextBooking().getStartDate().compareTo(o2.getNextBooking().getStartDate());
+                        return LocalDateTime.parse(o1.getNextBooking().get(2).toString()).compareTo(LocalDateTime.parse(o2.getNextBooking().get(2).toString()));
                     }
                 })
                 .collect(toList());
@@ -153,7 +153,7 @@ public class ItemServiceImpl implements ItemService {
         if (search.isEmpty() || search.isBlank()) {
             return List.of();
         }
-        List<Item> items = itemRepository.findAllByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(search, search);
+        List<Item> items = itemRepository.getItemByName("%" + search + "%");
         return items.stream()
                 .filter(Item::getAvailable)
                 .map(ItemMapper::toItemDto)

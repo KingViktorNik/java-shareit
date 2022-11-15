@@ -1,11 +1,13 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.*;
-import ru.practicum.shareit.booking.dto.BookingItemDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -26,11 +28,11 @@ public class ItemDto {
     @NotNull(message = "can not be null")
     private Boolean available; // статус вещи, true - доступна
 
-    private BookingItemDto lastBooking;
+    private Map<String, Object> lastBooking = new LinkedHashMap<>();
 
-    private BookingItemDto nextBooking;
+    private Map<String, Object> nextBooking = new LinkedHashMap<>();
 
-    private List<CommentDto> comments;
+    private List<Map<String, Object>> comments;
 
     @Override
     public boolean equals(Object o) {
@@ -42,5 +44,19 @@ public class ItemDto {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public void setLastBooking(Long itemId, Long bookerId, LocalDateTime start, LocalDateTime end) {
+        lastBooking.put("id", itemId);
+        lastBooking.put("bookerId", bookerId);
+        lastBooking.put("start", start);
+        lastBooking.put("end", end);
+    }
+
+    public void setNextBooking(Long itemId, Long bookerId, LocalDateTime start, LocalDateTime end) {
+        nextBooking.put("id", itemId);
+        nextBooking.put("bookerId", bookerId);
+        nextBooking.put("start", start);
+        nextBooking.put("end", end);
     }
 }
