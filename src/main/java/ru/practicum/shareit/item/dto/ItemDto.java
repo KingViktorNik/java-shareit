@@ -51,6 +51,7 @@ public class ItemDto {
         private String authorName;
         private Instant created;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
