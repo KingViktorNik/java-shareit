@@ -3,8 +3,6 @@ package ru.practicum.shareit.booking.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -16,28 +14,33 @@ public class BookingDto {
     private LocalDateTime start;
     private LocalDateTime end;
     private String status;
-    private Map<String, Long> booker = new LinkedHashMap<>();
-    private Map<String, Object> item = new LinkedHashMap<>();
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BookingDto)) return false;
-        return id != null && id.equals(((BookingDto) o).getId());
-    }
+    private final Booker booker = new Booker();
+    private final Item item = new Item();
 
     @Override
     public int hashCode() {
         return getClass().hashCode();
     }
 
-    public void setBooker(Long bookerId) {
-        booker.put("id", bookerId);
+    @Getter
+    @Setter
+    public static final class Booker {
+        private Long id;
+
     }
 
-    public void setItem(Long itemId, String itemName) {
-        item.put("id", itemId);
-        item.put("name", itemName);
+    @Getter
+    @Setter
+    public static final class Item {
+        private Long id;
+        private String name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BookingDto)) return false;
+        return id != null && id.equals(((BookingDto) o).getId());
     }
 }
 

@@ -23,8 +23,9 @@ public class BookingMapper {
         bookingDto.setStart(booking.getStartDate());
         bookingDto.setEnd(booking.getEndDate());
         bookingDto.setStatus(booking.getStatus().toString());
-        bookingDto.setBooker(booking.getBooker().getId());
-        bookingDto.setItem(booking.getItem().getId(), booking.getItem().getName());
+        bookingDto.getBooker().setId(booking.getBooker().getId());
+        bookingDto.getItem().setId(booking.getItem().getId());
+        bookingDto.getItem().setName(booking.getItem().getName());
 
         return bookingDto;
     }

@@ -4,10 +4,10 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -28,12 +28,29 @@ public class ItemDto {
     @NotNull(message = "can not be null")
     private Boolean available; // статус вещи, true - доступна
 
-    private Map<String, Object> lastBooking = new LinkedHashMap<>();
+    private Booking lastBooking;
 
-    private Map<String, Object> nextBooking = new LinkedHashMap<>();
+    private Booking nextBooking;
 
-    private List<Map<String, Object>> comments;
+    private List<Comment> comments = new ArrayList<>();
 
+    @Getter
+    @Setter
+    public static final class Booking {
+        private Long id;
+        private Long bookerId;
+        private LocalDateTime start;
+        private LocalDateTime end;
+    }
+
+    @Getter
+    @Setter
+    public static final class Comment {
+        private Long id;
+        private String text;
+        private String authorName;
+        private Instant created;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -44,19 +61,5 @@ public class ItemDto {
     @Override
     public int hashCode() {
         return getClass().hashCode();
-    }
-
-    public void setLastBooking(Long itemId, Long bookerId, LocalDateTime start, LocalDateTime end) {
-        lastBooking.put("id", itemId);
-        lastBooking.put("bookerId", bookerId);
-        lastBooking.put("start", start);
-        lastBooking.put("end", end);
-    }
-
-    public void setNextBooking(Long itemId, Long bookerId, LocalDateTime start, LocalDateTime end) {
-        nextBooking.put("id", itemId);
-        nextBooking.put("bookerId", bookerId);
-        nextBooking.put("start", start);
-        nextBooking.put("end", end);
     }
 }

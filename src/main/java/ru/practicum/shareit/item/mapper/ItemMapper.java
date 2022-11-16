@@ -7,9 +7,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -36,25 +34,15 @@ public class ItemMapper {
     }
 
     public static ItemDto toItemDto(Item item, List<Comment> comments) {
-        ItemDto itemDto = new ItemDto(item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                null,
-                null,
-                List.of()
-        );
+        ItemDto itemDto = new ItemDto();
+        itemDto.setId(item.getId());
+        itemDto.setName(item.getName());
+        itemDto.setDescription(item.getDescription());
+        itemDto.setAvailable(item.getAvailable());
 
         if (comments != null && comments.size() != 0) {
             itemDto.setComments(comments.stream()
-                    .map(commentDto -> {
-                        Map<String, Object> comment = new LinkedHashMap<>();
-                        comment.put("id", commentDto.getId());
-                        comment.put("text", commentDto.getText());
-                        comment.put("authorName", commentDto.getUser().getName());
-                        comment.put("created", commentDto.getCreated());
-                        return comment;
-                    })
+                    .map(ItemMapper::toDtoCommentItem)
                     .collect(toList())
             );
         }
@@ -67,34 +55,35 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.getAvailable());
+        itemDto.setLastBooking(null);
+        itemDto.setNextBooking(null);
         itemDto.setComments(List.of());
 
         if (lastBooking != null) {
-            itemDto.setLastBooking(lastBooking.getId(),
-                    lastBooking.getBooker().getId(),
-                    lastBooking.getStartDate(),
-                    lastBooking.getEndDate());
-        } else {
-            itemDto.setLastBooking(null);
+            ItemDto.Booking lastBookingDto = new ItemDto.Booking();
+
+            lastBookingDto.setId(lastBooking.getId());
+            lastBookingDto.setBookerId(lastBooking.getBooker().getId());
+            lastBookingDto.setStart(lastBooking.getStartDate());
+            lastBookingDto.setEnd(lastBooking.getEndDate());
+
+            itemDto.setLastBooking(lastBookingDto);
         }
+
         if (nextBooking != null) {
-            itemDto.setNextBooking(nextBooking.getId(),
-                    nextBooking.getBooker().getId(),
-                    nextBooking.getStartDate(),
-                    nextBooking.getEndDate());
-        } else {
-            itemDto.setNextBooking(null);
+            ItemDto.Booking nextBookingDto = new ItemDto.Booking();
+
+            nextBookingDto.setId(nextBooking.getId());
+            nextBookingDto.setBookerId(nextBooking.getBooker().getId());
+            nextBookingDto.setStart(nextBooking.getStartDate());
+            nextBookingDto.setEnd(nextBooking.getEndDate());
+
+            itemDto.setNextBooking(nextBookingDto);
         }
+
         if (comments != null && comments.size() != 0) {
             itemDto.setComments(comments.stream()
-                    .map(commentDto -> {
-                        Map<String, Object> comment = new LinkedHashMap<>();
-                        comment.put("id", commentDto.getId());
-                        comment.put("text", commentDto.getText());
-                        comment.put("authorName", commentDto.getUser().getName());
-                        comment.put("created", commentDto.getCreated());
-                        return comment;
-                    })
+                    .map(ItemMapper::toDtoCommentItem)
                     .collect(toList())
             );
         }
@@ -108,5 +97,14 @@ public class ItemMapper {
                 comment.getUser().getName(),
                 comment.getCreated()
         );
+    }
+
+    private static ItemDto.Comment toDtoCommentItem(Comment comment) {
+        ItemDto.Comment commentDto = new ItemDto.Comment();
+        commentDto.setId(comment.getId());
+        commentDto.setText(comment.getText());
+        commentDto.setAuthorName(comment.getUser().getName());
+        commentDto.setCreated(comment.getCreated());
+        return commentDto;
     }
 }

@@ -142,7 +142,8 @@ public class ItemServiceImpl implements ItemService {
                     if (o2.getNextBooking() == null) {
                         return -1;
                     } else {
-                        return LocalDateTime.parse(o1.getNextBooking().get(2).toString()).compareTo(LocalDateTime.parse(o2.getNextBooking().get(2).toString()));
+                        return LocalDateTime.parse(o1.getNextBooking().getStart().toString())
+                                .compareTo(LocalDateTime.parse(o2.getNextBooking().getStart().toString()));
                     }
                 })
                 .collect(toList());
