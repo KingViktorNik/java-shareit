@@ -19,6 +19,7 @@ import ru.practicum.shareit.exception.ValidationException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,10 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     @ExceptionHandler
     public ResponseEntity<?> handlerValidationException(final ValidationException ex, WebRequest request) {
         logger.error("not valid. Message: {}", ex.getMessage(), ex);
-        Map<String, Object> body = getGeneralErrorBody(HttpStatus.BAD_REQUEST, request);
-        body.put(REASONS, ex.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", ex.getMessage()); // что бы пройти тест 'Booking get all for user by wrong state'
+//        Map<String, Object> body = getGeneralErrorBody(HttpStatus.BAD_REQUEST, request);
+//        body.put(REASONS, ex.getMessage());
         return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
     }
 

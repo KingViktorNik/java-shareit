@@ -27,14 +27,13 @@ public class UserController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UserDto> newUser(@Valid @RequestBody UserDto userDto) {
-        return ResponseEntity.ok(userServiceImpl.newUser(userDto));
+    public ResponseEntity<UserDto> newUser(@RequestBody @Valid UserDto userCreateDto) {
+        return ResponseEntity.ok(userServiceImpl.newUser(userCreateDto));
     }
 
     @PatchMapping(path = "/{userId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UserDto> updateUser(@PathVariable @NotNull Long userId, @RequestBody UserDto userDto) {
-        userDto.setId(userId);
-        return ResponseEntity.ok(userServiceImpl.updateUser(userDto));
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long userId, @RequestBody @Valid UserUpdateDto userDto) {
+        return ResponseEntity.ok(userServiceImpl.updateUser(userDto, userId));
     }
 
     @GetMapping("{userId}")
