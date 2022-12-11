@@ -49,7 +49,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void UserUpdate() {
+    void userUpdate() {
         // given
         UserDto userDto = makeUserDto("user1@mail.com", "user1");
         userDto = userService.newUser(userDto);

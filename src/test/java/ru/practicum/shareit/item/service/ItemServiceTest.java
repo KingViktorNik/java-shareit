@@ -229,7 +229,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void ItemAllByUserIdNull() {
+    void itemAllByUserIdNull() {
         // when
         final ValidationException exception = assertThrows(
                 ValidationException.class,
@@ -241,7 +241,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void ItemAllByUserId() {
+    void itemAllByUserId() {
         //given
         List<Item> items = List.of(item);
         when(itemRepository.findAllByOwnerId(user.getId()))
@@ -257,7 +257,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void ItemAllByUserIdListBookings() {
+    void itemAllByUserIdListBookings() {
         //given
         Item item1 = new Item(1L, "item1", "item1", true, 1L, null);
         Item item2 = new Item(3L, "item2", "item2", true, 1L, null);

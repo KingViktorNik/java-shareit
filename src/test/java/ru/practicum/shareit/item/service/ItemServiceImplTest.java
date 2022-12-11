@@ -40,7 +40,7 @@ class ItemServiceImplTest {
     @BeforeEach
     void setUp() {
         UserDto userDto = userService.newUser(new UserDto(null, "User", "user@email.com"));
-        TypedQuery<User > query = em.createQuery("SELECT u FROM User u WHERE u.id=:id", User.class);
+        TypedQuery<User> query = em.createQuery("SELECT u FROM User u WHERE u.id=:id", User.class);
         user = query.setParameter("id", userDto.getId())
                 .getSingleResult();
         item = new Item(null, "item1", "itemDescription1", true, user.getId(), null);
@@ -89,7 +89,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void getByItemId(){
+    void getByItemId() {
         //given
         itemDto = itemService.addItem(user.getId(), itemDto);
 

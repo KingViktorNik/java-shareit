@@ -57,7 +57,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUserNotFount(){
+    void updateUserNotFount() {
         // when
         final NullObjectException exception = assertThrows(
                 NullObjectException.class,
