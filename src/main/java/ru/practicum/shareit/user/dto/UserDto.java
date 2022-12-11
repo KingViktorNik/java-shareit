@@ -23,16 +23,4 @@ public class UserDto {
 
     @NotBlank(message = "Login can not be empty")
     private String name;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof UserDto)) return false;
-        return id != null && id.equals(((UserDto) o).getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }

@@ -43,7 +43,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NullObjectException("User with id: " + userId + " not found"));
 
         Item item = ItemMapper.toEntity(itemDto);
-        item.setOwner(user);
+        item.setOwnerId(user.getId());
         itemDto = ItemMapper.toItemDto(itemRepository.save(item));
 
         log.info("new item - id:'{}' name:'{}'", itemDto.getId(), itemDto.getName());
@@ -62,12 +62,12 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemDto.getId())
                 .orElseThrow(() -> new NullObjectException("Item with id:" + itemId + " not found"));
 
-        if (!item.getOwner().getId().equals(userId)) {
+        if (!item.getOwnerId().equals(userId)) {
             throw new NullObjectException("The user with id:" + userId + " does not have such an item");
         }
 
         Item updateItem = ItemMapper.toEntity(itemDto);
-        updateItem.setOwner(item.getOwner());
+        updateItem.setOwnerId(item.getOwnerId());
 
         if (updateItem.getAvailable() == null) {
             updateItem.setAvailable(item.getAvailable());
@@ -95,7 +95,8 @@ public class ItemServiceImpl implements ItemService {
 
         List<Comment> comment = commentRepository.findAllByItem_Id(itemId);
 
-        if (item.getOwner().getId().equals(userId)) {
+        // Является ли пользователь владельцем вещи
+        if (item.getOwnerId().equals(userId)) {
             Booking last = bookingRepository.getLastBooking(itemId, LocalDateTime.now()).stream()
                     .findFirst()
                     .orElse(null);
@@ -115,11 +116,11 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
 
-        List<Item> items = itemRepository.findAllByOwner_Id(userId);
+        List<Item> items = itemRepository.findAllByOwnerId(userId);
 
         return items.stream()
                 .map(item -> {
-                    if (item.getOwner().getId().equals(userId)) {
+                    if (item.getOwnerId().equals(userId)) {
                         Booking last = bookingRepository.getLastBooking(item.getId(), LocalDateTime.now())
                                 .stream()
                                 .findFirst()
@@ -181,7 +182,7 @@ public class ItemServiceImpl implements ItemService {
         comment.setUser(booking.getBooker());
         comment.setCreated(Instant.now());
 
-        commentRepository.save(comment);
+        comment = commentRepository.save(comment);
 
         log.info("add comment itemId:'" + itemId + "' bookerId:'" + "' ");
 

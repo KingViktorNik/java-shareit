@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
-import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 
@@ -28,9 +27,10 @@ public class Item {
     private Boolean available;
 
     // владелиц вещи
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    private Long ownerId;
+
+    // потребность в вещи
+    private Long requestId;
 
     @Override
     public boolean equals(Object o) {

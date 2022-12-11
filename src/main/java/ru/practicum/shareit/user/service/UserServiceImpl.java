@@ -19,12 +19,11 @@ import static java.util.stream.Collectors.toList;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
     @Override
     public UserDto newUser(UserDto userDto) {
         try {
-            userDto = userMapper.toDto(userRepository.save(userMapper.toEntity(userDto)));
+            userDto = UserMapper.toDto(userRepository.save(UserMapper.toEntity(userDto)));
         } catch (Exception e) {
             throw new ConflictException("User with mail " + userDto.getEmail() + " already registered");
         }
@@ -50,9 +49,8 @@ public class UserServiceImpl implements UserService {
             userDto.setEmail(user.getEmail());
         }
 
-        UserDto newUserCreateDto = userMapper.toDto(
-                userRepository.save(
-                        userMapper.toEntity(userDto)
+        UserDto newUserCreateDto = UserMapper.toDto(
+                userRepository.save(UserMapper.toEntity(userDto)
                 )
         );
 
@@ -65,13 +63,13 @@ public class UserServiceImpl implements UserService {
     public UserDto getByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NullObjectException("User with id: " + userId + " not found"));
-        return userMapper.toDto(user);
+        return UserMapper.toDto(user);
     }
 
     @Override
     public List<UserDto> getUserAll() {
         return userRepository.findAll().stream()
-                .map(userMapper::toDto)
+                .map(UserMapper::toDto)
                 .collect(toList());
 
     }

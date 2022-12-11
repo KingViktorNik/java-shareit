@@ -14,22 +14,24 @@ import static java.util.stream.Collectors.toList;
 @Component
 public class ItemMapper {
     public static Item toEntity(ItemDto itemDto) {
-        return new Item(itemDto.getId(),
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                null
+    return new Item(itemDto.getId(),                                                // id
+                itemDto.getName(),                                                  // name
+                itemDto.getDescription(),                                           // description
+                itemDto.getAvailable(),                                             // available
+                null,                                                               // owner
+                itemDto.getRequestId() != null ? itemDto.getRequestId() : null      // requestId
         );
     }
 
     public static ItemDto toItemDto(Item item) {
-        return new ItemDto(item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                null,
-                null,
-                null
+        return new ItemDto(item.getId(),                                    // id
+                item.getName(),                                             // name
+                item.getDescription(),                                      // description
+                item.getAvailable(),                                        // available
+                item.getRequestId() != null ? item.getRequestId() : null,   // requesterId
+                null,                                                       // lastBooking
+                null,                                                       // nextBooking
+                null                                                        // comments
         );
     }
 
@@ -39,6 +41,7 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.getAvailable());
+        itemDto.setRequestId(item.getRequestId() != null ? item.getRequestId() : null);
 
         if (comments != null && comments.size() != 0) {
             itemDto.setComments(comments.stream()
@@ -55,6 +58,7 @@ public class ItemMapper {
         itemDto.setName(item.getName());
         itemDto.setDescription(item.getDescription());
         itemDto.setAvailable(item.getAvailable());
+        itemDto.setRequestId(item.getRequestId() != null ? item.getRequestId() : null);
         itemDto.setLastBooking(null);
         itemDto.setNextBooking(null);
         itemDto.setComments(List.of());

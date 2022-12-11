@@ -2,6 +2,9 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.StatusBooking;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -43,7 +46,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NullObjectException("Item with id:" + bookingInsertDto.getItemId() + " not found"));
 
         // Является ли пользователь владельцем вещи
-        if (item.getOwner().getId().equals(userId)) {
+        if (item.getOwnerId().equals(userId)) {
             throw new NullObjectException("This thing is yours");
         }
 
@@ -95,13 +98,13 @@ public class BookingServiceImpl implements BookingService {
             if (booking.getStatus().equals(StatusBooking.APPROVED)) {
                 throw new ValidationException("Cannot be changed");
             }
-            if (booking.getItem().getOwner().getId().equals(userId)) {
+            if (booking.getItem().getOwnerId().equals(userId)) {
                 booking.setStatus(StatusBooking.APPROVED);
             } else {
                 throw new NullObjectException("Cannot be changed");
             }
         } else {
-            if (booking.getItem().getOwner().getId().equals(userId)) {
+            if (booking.getItem().getOwnerId().equals(userId)) {
                 booking.setStatus(StatusBooking.REJECTED);
             } else {
                 booking.setStatus(StatusBooking.CANCELED);
@@ -120,7 +123,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllByUserOwner(Long userId, String statusSt) {
+    public List<BookingDto> getAllByUserOwner(Long userId, String statusSt, Integer from, Integer size) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NullObjectException("User with id: " + userId + " not found"));
 
@@ -134,29 +137,58 @@ public class BookingServiceImpl implements BookingService {
 
         switch (status) {
             case ALL: // все
-                return bookingRepository.findAllByItem_Owner_Id(userId).stream()
-                        .sorted((o1, o2) -> (o2.getStartDate().compareTo(o1.getStartDate())))
+                return bookingRepository.findAllByItem_OwnerId(
+                                PageRequest.of(from, size,
+                                        Sort.by(Sort.Direction.DESC, "StartDate")
+                                ),
+                                userId
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case CURRENT: // текущие
-                return bookingRepository.getBookingOwnerCurrent(userId, LocalDateTime.now()).stream()
+                return bookingRepository.getBookingOwnerCurrent(
+                                PageRequest.of(from, size),
+                                userId,
+                                LocalDateTime.now()
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case PAST: // завершенные
-                return bookingRepository.findAllByItem_Owner_IdAndEndDateBefore(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByItem_OwnerIdAndEndDateBefore(
+                                PageRequest.of(from, size,
+                                        Sort.by(Sort.Direction.DESC, "StartDate")
+                                ),
+                                userId,
+                                LocalDateTime.now()
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case FUTURE: // будущие
-                return bookingRepository.findAllByItem_Owner_IdAndEndDateAfter(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByItem_OwnerIdAndStartDateAfter(
+                                PageRequest.of(from, size,
+                                        Sort.by(Sort.Direction.DESC, "StartDate")
+                                ),
+                                userId,
+                                LocalDateTime.now()
+                        ).stream()
                         .sorted((o1, o2) -> (o2.getStartDate().compareTo(o1.getStartDate())))
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case WAITING: // ожидающие подтверждения
-                return bookingRepository.getBookingWaitingByOwner(userId).stream()
+                return bookingRepository.getBookingWaitingByOwner(
+                                PageRequest.of(from, size),
+                                userId
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case REJECTED: // отклонённые
-                return bookingRepository.findAllByStatusAndItem_Owner_Id(StatusBooking.REJECTED, userId).stream()
+                return bookingRepository.findAllByStatusAndItem_OwnerId(
+                                PageRequest.of(from, size,
+                                        Sort.by(Sort.Direction.DESC, "StartDate")
+                                ),
+                                StatusBooking.REJECTED,
+                                userId
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             default:
@@ -165,7 +197,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingsByUser(Long userId, String statusSt) {
+    public List<BookingDto> getAllBookingsByUser(Long userId, String statusSt, Integer from, Integer size) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NullObjectException("User with id: " + userId + " not found"));
 
@@ -179,29 +211,81 @@ public class BookingServiceImpl implements BookingService {
 
         switch (status) {
             case ALL: // все
-                return bookingRepository.findAllByBooker_Id(userId).stream()
+                Page<Booking> bookingPage = bookingRepository.findAllByBooker_Id(
+                        PageRequest.of(from, size,
+                                Sort.by(Sort.Direction.DESC, "StartDate")
+                        ),
+                        userId
+                );
+
+                if ((bookingPage.getTotalElements() % bookingPage.getTotalPages()) < from) {
+                    from = Math.toIntExact(bookingPage.getTotalElements() % bookingPage.getTotalPages());
+                    bookingPage = bookingRepository.findAllByBooker_Id(
+                            PageRequest.of(from, size,
+                                    Sort.by(Sort.Direction.DESC, "StartDate")
+                            ),
+                            userId
+                    );
+                }
+
+                return bookingPage.stream()
                         .sorted((o1, o2) -> (o2.getStartDate().compareTo(o1.getStartDate())))
                         .map(bookingMapper::toDto)
                         .collect(toList());
+
             case CURRENT: // текущие
-                return bookingRepository.getBookingCurrent(userId, LocalDateTime.now()).stream()
+                return bookingRepository.getBookingCurrent(
+                                PageRequest.of(from, size),
+                                userId,
+                                LocalDateTime.now()
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
+
             case PAST: // завершенные
-                return bookingRepository.findAllByBooker_IdAndEndDateBefore(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByBooker_IdAndEndDateBefore(
+                                PageRequest.of(
+                                        from,
+                                        size,
+                                        Sort.by(Sort.Direction.DESC, "StartDate")
+                                ),
+                                userId,
+                                LocalDateTime.now()
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case FUTURE: // будущие
-                return bookingRepository.findAllByBooker_IdAndStartDateIsAfter(userId, LocalDateTime.now()).stream()
+                return bookingRepository.findAllByBooker_IdAndStartDateIsAfter(
+                                PageRequest.of(
+                                        from,
+                                        size,
+                                        Sort.by(Sort.Direction.DESC, "StartDate")
+                                ),
+                                userId,
+                                LocalDateTime.now()
+                        ).stream()
                         .sorted((o1, o2) -> (o2.getStartDate().compareTo(o1.getStartDate())))
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case WAITING: // ожидающие подтверждения
-                return bookingRepository.getBookingStatusByUser(userId, status).stream()
+                return bookingRepository.getBookingStatusByUser(
+                                PageRequest.of(
+                                        from,
+                                        size
+                                ),
+                                userId,
+                                status
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             case REJECTED: // отклонённые
-                return bookingRepository.getBookingRejected(userId).stream()
+                return bookingRepository.getBookingRejected(
+                                PageRequest.of(
+                                        from,
+                                        size
+                                ),
+                                userId
+                        ).stream()
                         .map(bookingMapper::toDto)
                         .collect(toList());
             default:

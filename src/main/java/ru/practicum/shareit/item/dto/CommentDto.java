@@ -27,16 +27,7 @@ public class CommentDto {
     @Null
     private Instant created;
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CommentDto)) return false;
-        return id != null && id.equals(((CommentDto) o).getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    public CommentDto(String text) {
+        this.text = text;
     }
 }

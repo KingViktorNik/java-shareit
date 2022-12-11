@@ -54,7 +54,7 @@ public class ItemController {
         return itemService.getItemSearch(search);
     }
 
-    @PostMapping("{itemId}/comment")
+    @PostMapping(path = "{itemId}/comment", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CommentDto> addComment(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
                                                  @PathVariable Long itemId,
                                                  @RequestBody @Valid CommentDto commentDto) {

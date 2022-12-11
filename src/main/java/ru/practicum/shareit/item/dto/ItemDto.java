@@ -28,11 +28,20 @@ public class ItemDto {
     @NotNull(message = "can not be null")
     private Boolean available; // статус вещи, true - доступна
 
+    private Long requestId;
+
     private Booking lastBooking;
 
     private Booking nextBooking;
 
     private List<Comment> comments = new ArrayList<>();
+
+    public ItemDto(Long id, String name, String description, Boolean available) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.available = available;
+    }
 
     @Getter
     @Setter
@@ -50,17 +59,5 @@ public class ItemDto {
         private String text;
         private String authorName;
         private Instant created;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ItemDto)) return false;
-        return id != null && id.equals(((ItemDto) o).getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
     }
 }
