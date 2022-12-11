@@ -17,11 +17,6 @@ public class BookingDto {
     private final Booker booker = new Booker();
     private final Item item = new Item();
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
     @Getter
     @Setter
     public static final class Booker {

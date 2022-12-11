@@ -28,16 +28,4 @@ public class ItemRequest {
     @ManyToOne
     @JoinColumn(name = "requester_id")
     private User requester;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ItemRequest)) return false;
-        return id != null && id.equals(((ItemRequest) o).getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }
