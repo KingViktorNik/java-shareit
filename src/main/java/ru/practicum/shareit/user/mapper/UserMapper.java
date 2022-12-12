@@ -8,7 +8,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 @Component
 public class UserMapper {
 
-    public User toEntity(UserDto userCreateDto) {
+    public static User toEntity(UserDto userCreateDto) {
         User user = new User();
         user.setId(userCreateDto.getId());
         user.setEmail(userCreateDto.getEmail());
@@ -16,7 +16,7 @@ public class UserMapper {
         return user;
     }
 
-    public User toEntity(UserUpdateDto userCreateDto) {
+    public static User toEntity(UserUpdateDto userCreateDto) {
         User user = new User();
         user.setId(userCreateDto.getId());
         user.setEmail(userCreateDto.getEmail());
@@ -24,7 +24,7 @@ public class UserMapper {
         return user;
     }
 
-    public UserDto toDto(User user) {
+    public static UserDto toDto(User user) {
         UserDto userCreateDto = new UserDto();
         userCreateDto.setId(user.getId());
         userCreateDto.setEmail(user.getEmail());

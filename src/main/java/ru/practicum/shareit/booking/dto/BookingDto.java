@@ -17,11 +17,6 @@ public class BookingDto {
     private final Booker booker = new Booker();
     private final Item item = new Item();
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
     @Getter
     @Setter
     public static final class Booker {
@@ -34,13 +29,6 @@ public class BookingDto {
     public static final class Item {
         private Long id;
         private String name;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BookingDto)) return false;
-        return id != null && id.equals(((BookingDto) o).getId());
     }
 }
 

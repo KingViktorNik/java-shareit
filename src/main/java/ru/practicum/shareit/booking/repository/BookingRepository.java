@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,26 +14,26 @@ import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     /** Все арендованные вещи пользователя(владельца) **/
-    List<Booking> findAllByBooker_Id(Long userId);
+    Page<Booking> findAllByBooker_Id(Pageable pageable, Long userId);
 
     /** Все вещи пользователя **/
-    List<Booking> findAllByItem_Owner_Id(Long userId);
+    Page<Booking> findAllByItem_OwnerId(Pageable pageable,
+                                        Long userId);
 
     /** Все вещи которые пользователь хочет арендовать в будущем **/
-    List<Booking> findAllByBooker_IdAndStartDateIsAfter(Long userId, LocalDateTime dateTime);
+    Page<Booking> findAllByBooker_IdAndStartDateIsAfter(Pageable pageable, Long userId, LocalDateTime dateTime);
 
     /** Все вещи которые хотят арендовать у владельца вещей **/
-    List<Booking> findAllByItem_Owner_IdAndEndDateAfter(Long userId, LocalDateTime dateTime);
+    Page<Booking> findAllByItem_OwnerIdAndStartDateAfter(Pageable pageable, Long userId, LocalDateTime dateTime);
 
     /** Фильтр по статусу владельца вещей. **/
-    List<Booking> findAllByStatusAndItem_Owner_Id(StatusBooking status, Long userId);
+    Page<Booking> findAllByStatusAndItem_OwnerId(Pageable pageable, StatusBooking status, Long userId);
 
     /** Список пользователя завершенных бронирований  **/
-    List<Booking> findAllByBooker_IdAndEndDateBefore(Long userId, LocalDateTime dateTime);
+    Page<Booking> findAllByBooker_IdAndEndDateBefore(Pageable pageable, Long userId, LocalDateTime dateTime);
 
     /** Список владельца вещей завершенных бронирований **/
-    List<Booking> findAllByItem_Owner_IdAndEndDateBefore(Long userId, LocalDateTime dateTime);
-
+    Page<Booking> findAllByItem_OwnerIdAndEndDateBefore(Pageable pageable, Long userId, LocalDateTime dateTime);
 
     /** проверка арендовал ли пользователь вещ **/
     @Query("from Booking b " +
@@ -47,7 +49,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("from Booking " +
             "where id = :bookingId " +
             "and (booker.id = :userId " +
-            "or item.owner.id = :userId" +
+            "or item.ownerId = :userId" +
             ")")
     Optional<Booking> getByBooker(@Param("userId") Long userId,
                                   @Param("bookingId") Long bookingId);
@@ -56,30 +58,36 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("from Booking b " +
             "where (b.booker.id = :userId " +
             "and b.status = :status ) " +
-            "order by b.startDate")
-    List<Booking> getBookingStatusByUser(@Param("userId") Long userId,
+            "order by b.startDate desc ")
+    Page<Booking> getBookingStatusByUser(Pageable pageable,
+                                         @Param("userId") Long userId,
                                          @Param("status") StatusBooking status);
 
     /** Список вещей ожидающие подтверждения владельца **/
     @Query("from Booking  b " +
             "where b.status = 'WAITING' " +
-            "and b.item.owner.id = :ownerId ")
-    List<Booking> getBookingWaitingByOwner(Long ownerId);
+            "and b.item.ownerId = :ownerId " +
+            "order by b.startDate desc ")
+    Page<Booking> getBookingWaitingByOwner(Pageable pageable,
+                                           Long ownerId);
 
     /** Текущие заказы пользователя **/
     @Query("from Booking b " +
             "where b.booker.id = :userId " +
             "and b.startDate < :dateTime " +
             "and b.endDate > :dateTime")
-    List<Booking> getBookingCurrent(@Param("userId") Long userId,
+    Page<Booking> getBookingCurrent(Pageable pageable,
+                                    @Param("userId") Long userId,
                                     @Param("dateTime") LocalDateTime dateTime);
 
     /** Текущие заказы владельца вещей **/
     @Query("from Booking b " +
-            "where b.item.owner.id = :userId " +
+            "where b.item.ownerId = :userId " +
             "and b.startDate < :dateTime " +
-            "and b.endDate > :dateTime")
-    List<Booking> getBookingOwnerCurrent(@Param("userId") Long userId,
+            "and b.endDate > :dateTime " +
+            "order by b.startDate desc ")
+    Page<Booking> getBookingOwnerCurrent(Pageable pageable,
+                                         @Param("userId") Long userId,
                                          @Param("dateTime") LocalDateTime dateTime);
 
     /** Список вещей отклоненных пользователем или владельцем **/
@@ -87,9 +95,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "where (b.booker.id = :userId " +
             "and b.status in('REJECTED', 'CANCELED')) " +
             "order by b.startDate")
-    List<Booking> getBookingRejected(@Param("userId") Long userId);
+    Page<Booking> getBookingRejected(Pageable pageable,
+                                     @Param("userId") Long userId);
 
-    /** Список вещей подтворённых владельцем **/
+    /** Список вещей подтвенрённых владельцем **/
     @Query("from Booking b " +
             "where b.item.id = :itemId " +
             "and (b.status = 'APPROVED' " +
