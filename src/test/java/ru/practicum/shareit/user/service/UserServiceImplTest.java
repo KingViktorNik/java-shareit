@@ -66,7 +66,6 @@ class UserServiceImplTest {
         assertThat(user.getId(), notNullValue());
         assertThat(user.getEmail(), equalTo(userDtoResult.getEmail()));
         assertThat(user.getName(), equalTo(userDtoResult.getName()));
-
     }
 
     @Test

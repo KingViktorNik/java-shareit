@@ -26,7 +26,7 @@ public class ItemRequestDto {
     @Null
     private LocalDateTime created;
 
-    List<Item> items = new ArrayList<>();
+    private List<Item> items = new ArrayList<>();
 
     public ItemRequestDto(String description) {
         this.description = description;
