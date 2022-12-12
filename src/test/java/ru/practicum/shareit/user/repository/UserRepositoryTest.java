@@ -46,7 +46,7 @@ class UserRepositoryTest {
     void verifyUpdateUser() {
         // given
         User user = em.persist(new User(null, "user2", "user2@mail.com"));
-        User userNew = new User(1L, "user3", "user3@mail.com");
+        User userNew = new User(user.getId(), "user3", "user3@mail.com");
 
         // when and then
         User userTest = em.find(User.class, user.getId());
