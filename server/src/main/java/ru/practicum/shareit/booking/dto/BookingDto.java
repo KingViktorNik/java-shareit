@@ -21,7 +21,6 @@ public class BookingDto {
     @Setter
     public static final class Booker {
         private Long id;
-
     }
 
     @Getter
