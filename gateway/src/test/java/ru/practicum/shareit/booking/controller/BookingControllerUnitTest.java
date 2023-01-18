@@ -44,7 +44,7 @@ class BookingControllerUnitTest {
         //when
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                ()-> controller.addBooking(userId, bookingDto)
+                () -> controller.addBooking(userId, bookingDto)
         );
 
         //then
@@ -63,7 +63,7 @@ class BookingControllerUnitTest {
         //when
         final ValidationException exception = assertThrows(
                 ValidationException.class,
-                ()-> controller.addBooking(userId, bookingDto)
+                () -> controller.addBooking(userId, bookingDto)
         );
 
         //then
