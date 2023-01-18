@@ -26,7 +26,6 @@ public class ItemClient extends BaseClient {
         );
     }
 
-
     public Object addItem(Long userId, ItemDto itemDto) {
         return post("", userId, itemDto).getBody();
     }

@@ -12,7 +12,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import ru.practicum.shareit.exception.NullObjectException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.request.ItemRequestClient;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.ItemRequestController;
+import ru.practicum.shareit.request.ItemRequestDto;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;

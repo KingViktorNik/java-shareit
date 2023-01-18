@@ -9,8 +9,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.BookingClient;
+import ru.practicum.shareit.booking.BookingController;
 import ru.practicum.shareit.booking.StatusBooking;
-import ru.practicum.shareit.booking.dto.BookingInsertDto;
+import ru.practicum.shareit.booking.BookingDto;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -51,7 +52,7 @@ class BookingControllerTest {
 
     @Test
     void addBooking() throws Exception {
-        when(bookingClient.addBooking(anyLong(), any(BookingInsertDto.class)))
+        when(bookingClient.addBooking(anyLong(), any(BookingDto.class)))
                 .thenReturn(bookingDto);
 
         mvc.perform(post("/bookings")

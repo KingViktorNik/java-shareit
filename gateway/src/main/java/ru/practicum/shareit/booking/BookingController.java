@@ -1,14 +1,10 @@
-package ru.practicum.shareit.booking.controller;
+package ru.practicum.shareit.booking;
 
-import com.sun.istack.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.booking.BookingClient;
-import ru.practicum.shareit.booking.StatusBooking;
-import ru.practicum.shareit.booking.dto.BookingInsertDto;
 import ru.practicum.shareit.exception.ValidationException;
 
 import javax.validation.Valid;
@@ -33,21 +29,21 @@ public class BookingController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> addBooking(@RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
-                                             @Valid @RequestBody BookingInsertDto bookingInsertDto) {
+                                             @Valid @RequestBody BookingDto bookingDto) {
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");
         }
 
         // Дата аренды не должна быть в прошлом
-        if (bookingInsertDto.getStart().isBefore(LocalDateTime.now())
+        if (bookingDto.getStart().isBefore(LocalDateTime.now())
                 // дата окончания аренды не должна быть меньше даты аренды
-                || bookingInsertDto.getEnd().isBefore(bookingInsertDto.getStart())
+                || bookingDto.getEnd().isBefore(bookingDto.getStart())
                 // дата начала аренды не должно быть позднее даты окончания аренды
-                || bookingInsertDto.getStart().isAfter(bookingInsertDto.getEnd())) {
-            throw new ValidationException(bookingInsertDto.getEnd() + " It can't be in the past");
+                || bookingDto.getStart().isAfter(bookingDto.getEnd())) {
+            throw new ValidationException(bookingDto.getEnd() + " It can't be in the past");
         }
 
-        ResponseEntity<Object> result = ResponseEntity.ok(bookingClient.addBooking(userId, bookingInsertDto));
+        ResponseEntity<Object> result = ResponseEntity.ok(bookingClient.addBooking(userId, bookingDto));
         log.info("[POST:{}] addBooking[userId:{} bookingId:{}]",
                 result.getStatusCode(),
                 userId,
@@ -58,7 +54,7 @@ public class BookingController {
 
     @PatchMapping("/{bookingId}")
     public ResponseEntity<Object> statusBooking(@RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
-                                                @NotNull @PathVariable Long bookingId,
+                                                @PathVariable Long bookingId,
                                                 @NotBlank @RequestParam String approved) {
         if (userId == null) {
             throw new ValidationException("missing header data 'X-Sharer-User-Id'");

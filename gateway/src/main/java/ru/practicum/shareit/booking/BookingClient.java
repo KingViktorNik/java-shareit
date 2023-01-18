@@ -6,7 +6,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-import ru.practicum.shareit.booking.dto.BookingInsertDto;
 import ru.practicum.shareit.client.BaseClient;
 
 import java.util.Map;
@@ -25,8 +24,8 @@ public class BookingClient extends BaseClient {
         );
     }
 
-    public Object addBooking(Long userId, BookingInsertDto bookingInsertDto) {
-        return post("", userId, bookingInsertDto).getBody();
+    public Object addBooking(Long userId, BookingDto bookingDto) {
+        return post("", userId, bookingDto).getBody();
     }
 
     public Object statusBooking(Long userId, Long bookingId, String approved) {
