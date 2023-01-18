@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
@@ -30,9 +29,6 @@ public class ItemController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> addItem(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
                                           @Valid @RequestBody ItemDto itemDto) {
-        if (userId == null) {
-            throw new ValidationException("missing header data 'X-Sharer-User-Id'");
-        }
         ResponseEntity<Object> result = ResponseEntity.ok(itemClient.addItem(userId, itemDto));
         Map<String, Object> body = (Map) result.getBody();
         log.info("[POST:{}] add items[userId:{} itemId:{}]",
@@ -45,11 +41,8 @@ public class ItemController {
 
     @PatchMapping(path = "/{itemId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updateItem(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
-                                             @PathVariable Long itemId,
+                                             @Valid @PathVariable Long itemId,
                                              @RequestBody ItemDto itemDto) {
-        if (userId == null) {
-            throw new ValidationException("missing header data 'X-Sharer-User-Id'");
-        }
         itemDto.setId(itemId);
         ResponseEntity<Object> result = ResponseEntity.ok(itemClient.updateItem(userId, itemDto));
         log.info("[PATCH:{}] update items[userId:{} itemId:{}]",
@@ -63,9 +56,6 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public ResponseEntity<Object> getByItemId(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
                                               @Valid @PathVariable Long itemId) {
-        if (userId == null) {
-            throw new ValidationException("missing header data 'X-Sharer-User-Id'");
-        }
         ResponseEntity<Object> result = ResponseEntity.ok(itemClient.getByItemId(userId, itemId));
         log.info("[GET:{}] update items[userId:{} itemId:{}]",
                 result.getStatusCode(),
@@ -77,9 +67,6 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> getUserItemAll(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId) {
-        if (userId == null) {
-            throw new ValidationException("missing header data 'X-Sharer-User-Id'");
-        }
         ResponseEntity<Object> result = ResponseEntity.ok(itemClient.getByUserIdItemAll(userId));
         log.info("[GET:{}] all items[userId:{} size:{}]",
                 result.getStatusCode(),
@@ -104,9 +91,6 @@ public class ItemController {
     public ResponseEntity<Object> addComment(@Valid @RequestHeader(required = false, value = "X-Sharer-User-Id") Long userId,
                                              @PathVariable Long itemId,
                                              @RequestBody @Valid CommentDto commentDto) {
-        if (userId == null) {
-            throw new ValidationException("missing header data 'X-Sharer-User-Id'");
-        }
         ResponseEntity<Object> result = ResponseEntity.ok(itemClient.addComment(userId, itemId, commentDto));
         log.info("[POST:{}] add comment[authorId:{} commentId:{}]",
                 result.getStatusCode(),
